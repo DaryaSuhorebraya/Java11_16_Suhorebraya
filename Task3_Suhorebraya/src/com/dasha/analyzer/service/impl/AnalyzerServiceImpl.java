@@ -36,19 +36,25 @@ public class AnalyzerServiceImpl implements AnalyzerService{
     }
 
     @Override
-    public Node next(int i) throws ServiceException {
+    public Node next(int nodeIndex) throws ServiceException {
+        if (nodeIndex<=0) {
+            throw new ServiceException("Incorrect node's index");
+        }
         Node node;
-        while (!(node=getNode(i)).getType().equals("End")){
-            i++;
+        while (!(node=getNode(nodeIndex)).getType().equals("End")){
             if (!node.getType().equals("Empty")){
                 return node;
             }
+            nodeIndex++;
         }
         return null;
     }
-    // This method allows you to get a concrete node
+    // This method allows to get a concrete node
     @Override
-    public Node getNode(int nodeNumber) throws ServiceException {
+    public Node getNode(int nodeIndex) throws ServiceException {
+        if (nodeIndex<=0) {
+            throw new ServiceException("Incorrect node's index");
+        }
         Node node;
         BufferedReader bufferedReader=null;
         try {
@@ -56,7 +62,7 @@ public class AnalyzerServiceImpl implements AnalyzerService{
             AnalyzerDAO analyzerDAO=daoFactory.getAnalyzerDAO();
             bufferedReader=analyzerDAO.getInfoFilledBufferedReader();
 
-            StringBuilder nodeString=readBuffer(bufferedReader,nodeNumber);
+            StringBuilder nodeString=readBuffer(bufferedReader,nodeIndex);
             node=new Node();
             if (nodeString.toString().equals("End of a document")){
                 node.setType("End");
@@ -66,17 +72,15 @@ public class AnalyzerServiceImpl implements AnalyzerService{
             if (node.getType()==null){
                 node.setType("Empty");
             }
-        }
-        catch (DAOException e){
+        } catch (DAOException e){
             throw new ServiceException(e);
-        }
-        finally {
+        } finally {
             try {
                 if (bufferedReader!=null){
                 bufferedReader.close();
                 }
             } catch (IOException e) {
-                throw new ServiceException(e);
+                e.printStackTrace();
             }
         }
         return node;
@@ -205,22 +209,18 @@ public class AnalyzerServiceImpl implements AnalyzerService{
             for (Node node:nodeList){
                 System.out.println(node.getType()+" "+node.getContent());
             }
-        }
-        catch (DAOException e){
+        } catch (DAOException e){
             throw new ServiceException(e);
-        }
-        finally {
+        } finally {
             try {
                 if (bufferedReader!=null){
                     bufferedReader.close();
                 }
             } catch (IOException e) {
-                throw new ServiceException(e);
+                e.printStackTrace();
             }
         }
     }
-
-
 
 
     private List<Node> fillNodeList(BufferedReader bufferedReader)
